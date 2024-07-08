@@ -1,9 +1,22 @@
-import React, { useState } from "react";
-import "./TodoList.css"; // Importing CSS file for styling
+import React, { useState, useEffect } from 'react';
+import './TodoList.css'; // Importing CSS file for styling
 
 const TodoList = () => {
   const [items, setItems] = useState([]);
-  const [text, setText] = useState("");
+  const [text, setText] = useState('');
+
+  // Load tasks from local storage on initial load
+  useEffect(() => {
+    const storedItems = JSON.parse(localStorage.getItem('todoItems'));
+    if (storedItems) {
+      setItems(storedItems);
+    }
+  }, []);
+
+  // Save tasks to local storage whenever 'items' changes
+  useEffect(() => {
+    localStorage.setItem('todoItems', JSON.stringify(items));
+  }, [items]);
 
   const handleChange = (e) => {
     setText(e.target.value);
@@ -11,9 +24,9 @@ const TodoList = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (text.trim() !== "") {
+    if (text.trim() !== '') {
       setItems([...items, { id: Date.now(), text, completed: false }]);
-      setText("");
+      setText('');
     }
   };
 
@@ -26,6 +39,20 @@ const TodoList = () => {
 
   const handleDelete = (id) => {
     const updatedItems = items.filter((item) => item.id !== id);
+    setItems(updatedItems);
+  };
+
+  const handleEdit = (id, newText) => {
+    const updatedItems = items.map((item) =>
+      item.id === id ? { ...item, text: newText } : item
+    );
+    setItems(updatedItems);
+  };
+
+  const handleEditChange = (id, newText) => {
+    const updatedItems = items.map((item) =>
+      item.id === id ? { ...item, text: newText } : item
+    );
     setItems(updatedItems);
   };
 
@@ -43,13 +70,13 @@ const TodoList = () => {
       </form>
       <ul>
         {items.map((item) => (
-          <li key={item.id} className={item.completed ? "completed" : ""}>
+          <li key={item.id} className={item.completed ? 'completed' : ''}>
             {item.text}
             <div>
               <button onClick={() => markComplete(item.id)}>
-                {item.completed ? "Undo" : "Complete"}
+                {item.completed ? 'Undo' : 'Complete'}
               </button>
-              <button onClick={() => handleDelete(item.id)}>Delete</button>
+              <button onClick={() => handleEdit(item.id, prompt('Enter new text',item.text))}>Edit</button>
             </div>
           </li>
         ))}
